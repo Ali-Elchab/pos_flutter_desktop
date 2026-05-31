@@ -14,11 +14,13 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final outOfStock = product.isOutOfStock;
+
     return Material(
-      color: Colors.white,
+      color: outOfStock ? const Color(0xFFF8FAFC) : Colors.white,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
-        onTap: onPressed,
+        onTap: outOfStock ? null : onPressed,
         borderRadius: BorderRadius.circular(8),
         child: Container(
           decoration: BoxDecoration(
@@ -54,10 +56,10 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (product.sku != null) ...[
+              if (product.barcode != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  product.sku!,
+                  product.barcode!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -67,16 +69,50 @@ class ProductCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 8),
-              Text(
-                MoneyFormatter.format(product.price),
-                style: const TextStyle(
-                  color: Color(0xFF006FE8),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    MoneyFormatter.format(product.price),
+                    style: const TextStyle(
+                      color: Color(0xFF006FE8),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StockBadge(stockQuantity: product.stockQuantity),
+                ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StockBadge extends StatelessWidget {
+  const _StockBadge({required this.stockQuantity});
+
+  final int stockQuantity;
+
+  @override
+  Widget build(BuildContext context) {
+    final out = stockQuantity <= 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: out ? const Color(0xFFFEE2E2) : const Color(0xFFDCFCE7),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        out ? 'Out' : '$stockQuantity',
+        style: TextStyle(
+          color: out ? const Color(0xFFB91C1C) : const Color(0xFF166534),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

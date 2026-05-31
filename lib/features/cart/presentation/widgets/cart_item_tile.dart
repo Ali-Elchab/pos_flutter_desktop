@@ -37,6 +37,7 @@ class CartItemTile extends StatelessWidget {
                   [
                     if (item.product.category != null) item.product.category!,
                     MoneyFormatter.format(item.product.price),
+                    'Stock ${item.product.stockQuantity}',
                   ].join(' - '),
                   style: const TextStyle(color: Color(0xFF64748B)),
                 ),

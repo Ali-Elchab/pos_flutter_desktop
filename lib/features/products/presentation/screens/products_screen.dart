@@ -52,6 +52,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
           children: [
             ProductSearchBar(
               onChanged: (value) => setState(() => _searchQuery = value),
+              onSubmitted: _loadBarcode,
+              onRefresh: () => _productCubit.loadProducts(),
             ),
             const SizedBox(height: 20),
             BlocBuilder<ProductCubit, ProductState>(
@@ -112,10 +114,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
       final matchesSearch =
           query.isEmpty ||
           product.name.toLowerCase().contains(query) ||
-          (product.sku?.toLowerCase().contains(query) ?? false);
+          (product.barcode?.toLowerCase().contains(query) ?? false);
 
       return matchesCategory && matchesSearch;
     }).toList();
+  }
+
+  void _loadBarcode(String value) {
+    final barcode = value.trim();
+    if (barcode.isEmpty) {
+      _productCubit.loadProducts();
+      return;
+    }
+
+    _productCubit.loadProducts(barcode: barcode);
   }
 }
 

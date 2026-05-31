@@ -11,8 +11,11 @@ class ProductRepository {
   final ApiClient _apiClient;
   final String _serverBaseUrl;
 
-  Future<List<ProductModel>> fetchProducts() async {
-    final data = await _apiClient.get(ApiConstants.products);
+  Future<List<ProductModel>> fetchProducts({String? barcode}) async {
+    final data = await _apiClient.get(
+      ApiConstants.products,
+      queryParameters: barcode == null ? null : {'barcode': barcode},
+    );
     final items = _extractList(data);
 
     return items

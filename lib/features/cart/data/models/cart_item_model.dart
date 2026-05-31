@@ -12,7 +12,7 @@ class CartItemModel {
     return {
       'productId': product.id,
       'name': product.name,
-      'sku': product.sku,
+      'barcode': product.barcode,
       'category': product.category,
       'imageUrl': product.imageUrl,
       'unitPrice': product.price,

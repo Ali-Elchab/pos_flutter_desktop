@@ -10,11 +10,11 @@ class ProductCubit extends Cubit<ProductState> {
 
   final ProductRepository _repository;
 
-  Future<void> loadProducts() async {
+  Future<void> loadProducts({String? barcode}) async {
     emit(state.copyWith(status: ProductStatus.loading));
 
     try {
-      final products = await _repository.fetchProducts();
+      final products = await _repository.fetchProducts(barcode: barcode);
       emit(state.copyWith(status: ProductStatus.success, products: products));
     } catch (error) {
       emit(

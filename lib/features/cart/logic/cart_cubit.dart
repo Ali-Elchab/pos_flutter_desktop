@@ -19,9 +19,11 @@ class CartCubit extends Cubit<CartState> {
     );
 
     if (existingIndex == -1) {
+      if (product.isOutOfStock) return;
       items.add(CartItemModel(product: product, quantity: 1));
     } else {
       final existing = items[existingIndex];
+      if (existing.quantity >= product.stockQuantity) return;
       items[existingIndex] = existing.copyWith(quantity: existing.quantity + 1);
     }
 
