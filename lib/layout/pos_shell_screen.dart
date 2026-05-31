@@ -9,6 +9,8 @@ import 'package:pos_flutter_desktop/features/products/presentation/screens/produ
 import 'package:pos_flutter_desktop/features/sales/data/models/create_sale_request.dart';
 import 'package:pos_flutter_desktop/features/sales/data/repositories/sales_repository.dart';
 import 'package:pos_flutter_desktop/features/sales/logic/sales_cubit.dart';
+import 'package:pos_flutter_desktop/features/sales/presentation/widgets/checkout_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PosShellScreen extends StatefulWidget {
   const PosShellScreen({this.productRepository, super.key});
@@ -20,7 +22,15 @@ class PosShellScreen extends StatefulWidget {
 }
 
 class _PosShellScreenState extends State<PosShellScreen> {
+  static const _serverBaseUrlKey = 'server_base_url';
+
   String _serverBaseUrl = ApiConstants.serverBaseUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedServerBaseUrl();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +58,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
                 children: [
                   _TopBar(
                     serverBaseUrl: normalizedServerBaseUrl,
+                    onHistoryPressed: () => _openSalesHistory(context),
                     onSettingsPressed: _openSettingsDialog,
                   ),
                   Expanded(
@@ -114,9 +125,42 @@ class _PosShellScreenState extends State<PosShellScreen> {
 
     if (nextBaseUrl == null) return;
 
+    final normalized = ApiConstants.normalizeServerBaseUrl(nextBaseUrl);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_serverBaseUrlKey, normalized);
+
     setState(() {
-      _serverBaseUrl = ApiConstants.normalizeServerBaseUrl(nextBaseUrl);
+      _serverBaseUrl = normalized;
     });
+  }
+
+  Future<void> _loadSavedServerBaseUrl() async {
+    final preferences = await SharedPreferences.getInstance();
+    final saved = preferences.getString(_serverBaseUrlKey);
+    if (saved == null || saved.isEmpty || !mounted) return;
+
+    setState(() {
+      _serverBaseUrl = ApiConstants.normalizeServerBaseUrl(saved);
+    });
+  }
+
+  Future<void> _openSalesHistory(BuildContext context) async {
+    final salesCubit = context.read<SalesCubit>();
+    await salesCubit.loadSalesHistory();
+    if (!context.mounted) return;
+
+    final state = salesCubit.state;
+    if (state.status == SalesStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.errorMessage ?? 'Could not load sales.')),
+      );
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (_) => SalesHistoryDialog(sales: state.sales),
+    );
   }
 
   Future<void> _pay(BuildContext context, CartState cartState) async {
@@ -142,16 +186,22 @@ class _PosShellScreenState extends State<PosShellScreen> {
     }
 
     context.read<CartCubit>().clear();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Sale completed.')));
+    await showDialog<void>(
+      context: context,
+      builder: (_) => ReceiptDialog(sale: sale),
+    );
   }
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.serverBaseUrl, required this.onSettingsPressed});
+  const _TopBar({
+    required this.serverBaseUrl,
+    required this.onHistoryPressed,
+    required this.onSettingsPressed,
+  });
 
   final String serverBaseUrl;
+  final VoidCallback onHistoryPressed;
   final VoidCallback onSettingsPressed;
 
   @override
@@ -249,6 +299,12 @@ class _TopBar extends StatelessWidget {
               ),
               if (showSettings) ...[
                 const SizedBox(width: 12),
+                IconButton(
+                  tooltip: 'Sales history',
+                  onPressed: onHistoryPressed,
+                  icon: const Icon(Icons.receipt_long_outlined),
+                ),
+                const SizedBox(width: 4),
                 IconButton(
                   tooltip: 'Settings - $serverBaseUrl',
                   onPressed: onSettingsPressed,

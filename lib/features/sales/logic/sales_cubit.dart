@@ -29,6 +29,22 @@ class SalesCubit extends Cubit<SalesState> {
     }
   }
 
+  Future<void> loadSalesHistory() async {
+    emit(state.copyWith(status: SalesStatus.loading));
+
+    try {
+      final sales = await _repository.fetchSales();
+      emit(state.copyWith(status: SalesStatus.success, sales: sales));
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: SalesStatus.failure,
+          errorMessage: error.toString(),
+        ),
+      );
+    }
+  }
+
   void resetStatus() {
     emit(state.copyWith(status: SalesStatus.initial));
   }

@@ -23,4 +23,20 @@ class SalesRepository {
 
     return SaleModel.fromRequest(request);
   }
+
+  Future<List<SaleModel>> fetchSales({int take = 20}) async {
+    final data = await _apiClient.get(
+      ApiConstants.sales,
+      queryParameters: {'take': take},
+    );
+
+    if (data is List) {
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(SaleModel.fromJson)
+          .toList();
+    }
+
+    return const [];
+  }
 }

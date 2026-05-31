@@ -9,6 +9,8 @@ class SaleModel {
     required this.tax,
     required this.total,
     required this.paymentMethod,
+    this.amountPaid = 0,
+    this.changeDue = 0,
     this.receiptNumber,
     this.createdAt,
   });
@@ -21,6 +23,8 @@ class SaleModel {
   final double tax;
   final double total;
   final String paymentMethod;
+  final double amountPaid;
+  final double changeDue;
 
   factory SaleModel.fromJson(Map<String, dynamic> json) {
     final rawItems = json['items'];
@@ -29,7 +33,8 @@ class SaleModel {
       id: (json['id'] ?? json['saleId'] ?? '').toString(),
       receiptNumber: (json['receiptNumber'] ?? json['receiptNo'])?.toString(),
       createdAt: DateTime.tryParse(
-        (json['createdAt'] ?? json['date'] ?? '').toString(),
+        (json['createdAtUtc'] ?? json['createdAt'] ?? json['date'] ?? '')
+            .toString(),
       ),
       items: rawItems is List
           ? rawItems
@@ -41,6 +46,8 @@ class SaleModel {
       tax: _readDouble(json['tax']),
       total: _readDouble(json['total']),
       paymentMethod: (json['paymentMethod'] ?? '').toString(),
+      amountPaid: _readDouble(json['amountPaid']),
+      changeDue: _readDouble(json['changeDue']),
     );
   }
 
@@ -52,7 +59,7 @@ class SaleModel {
             (item) => SaleReceiptItem(
               productId: item.product.id,
               name: item.product.name,
-              sku: item.product.sku,
+              sku: item.product.barcode,
               category: item.product.category,
               imageUrl: item.product.imageUrl,
               unitPrice: item.product.price,
@@ -64,6 +71,8 @@ class SaleModel {
       subtotal: request.subtotal,
       tax: request.tax,
       total: request.total,
+      amountPaid: request.total,
+      changeDue: 0,
       paymentMethod: request.paymentMethod,
       createdAt: DateTime.now(),
     );
@@ -99,8 +108,8 @@ class SaleReceiptItem {
   factory SaleReceiptItem.fromJson(Map<String, dynamic> json) {
     return SaleReceiptItem(
       productId: (json['productId'] ?? json['id'] ?? '').toString(),
-      name: (json['name'] ?? json['productName'] ?? '').toString(),
-      sku: json['sku']?.toString(),
+      name: (json['productName'] ?? json['name'] ?? '').toString(),
+      sku: (json['barcode'] ?? json['sku'])?.toString(),
       category: (json['category'] ?? json['categoryName'])?.toString(),
       imageUrl: ApiConstants.resolveServerUrl(
         (json['imageUrl'] ?? json['imageURL'] ?? json['image'])?.toString(),
