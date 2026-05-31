@@ -11,6 +11,7 @@ abstract final class ApiConstants {
 
   static const products = '/products';
   static const sales = '/sales';
+  static const salesCheckout = '/sales/checkout';
 
   static String? resolveServerUrl(String? path) {
     if (path == null || path.isEmpty) return path;

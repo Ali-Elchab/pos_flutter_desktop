@@ -1,4 +1,5 @@
 import 'package:pos_flutter_desktop/core/constants/api_constants.dart';
+import 'package:pos_flutter_desktop/features/sales/data/models/create_sale_request.dart';
 
 class SaleModel {
   const SaleModel({
@@ -40,6 +41,31 @@ class SaleModel {
       tax: _readDouble(json['tax']),
       total: _readDouble(json['total']),
       paymentMethod: (json['paymentMethod'] ?? '').toString(),
+    );
+  }
+
+  factory SaleModel.fromRequest(CreateSaleRequest request) {
+    return SaleModel(
+      id: '',
+      items: request.items
+          .map(
+            (item) => SaleReceiptItem(
+              productId: item.product.id,
+              name: item.product.name,
+              sku: item.product.sku,
+              category: item.product.category,
+              imageUrl: item.product.imageUrl,
+              unitPrice: item.product.price,
+              quantity: item.quantity,
+              lineTotal: item.total,
+            ),
+          )
+          .toList(),
+      subtotal: request.subtotal,
+      tax: request.tax,
+      total: request.total,
+      paymentMethod: request.paymentMethod,
+      createdAt: DateTime.now(),
     );
   }
 

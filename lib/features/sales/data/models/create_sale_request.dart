@@ -17,6 +17,20 @@ class CreateSaleRequest {
 
   Map<String, dynamic> toJson() {
     return {
+      'items': items
+          .map(
+            (item) => {
+              'productId': int.tryParse(item.product.id) ?? item.product.id,
+              'quantity': item.quantity,
+            },
+          )
+          .toList(),
+      'amountPaid': total,
+    };
+  }
+
+  Map<String, dynamic> toReceiptJson() {
+    return {
       'items': items.map((item) => item.toReceiptJson()).toList(),
       'subtotal': subtotal,
       'tax': tax,

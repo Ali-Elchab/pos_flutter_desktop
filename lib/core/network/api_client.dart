@@ -38,8 +38,22 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> post(String path, {Object? data}) async {
+    try {
+      final response = await _dio.post<dynamic>(path, data: data);
+      return response.data;
+    } on DioException catch (error) {
+      throw ApiException(
+        _resolveErrorMessage(error),
+        statusCode: error.response?.statusCode,
+      );
+    }
+  }
+
   String _resolveErrorMessage(DioException error) {
     final data = error.response?.data;
+    if (data is String && data.isNotEmpty) return data;
+
     if (data is Map<String, dynamic>) {
       final message = data['message'] ?? data['title'] ?? data['error'];
       if (message is String && message.isNotEmpty) return message;
