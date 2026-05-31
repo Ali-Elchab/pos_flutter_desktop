@@ -3,7 +3,7 @@ import 'package:pos_flutter_desktop/core/constants/api_constants.dart';
 import 'package:pos_flutter_desktop/core/network/api_exception.dart';
 
 class ApiClient {
-  ApiClient({Dio? dio, String baseUrl = ApiConstants.baseUrl})
+  ApiClient({Dio? dio, String baseUrl = ApiConstants.apiBaseUrl})
     : _dio =
           dio ??
           Dio(

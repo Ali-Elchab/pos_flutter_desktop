@@ -1,3 +1,5 @@
+import 'package:pos_flutter_desktop/core/constants/api_constants.dart';
+
 class ProductModel {
   const ProductModel({
     required this.id,
@@ -5,6 +7,7 @@ class ProductModel {
     required this.price,
     this.sku,
     this.category,
+    this.imageUrl,
   });
 
   final String id;
@@ -12,6 +15,7 @@ class ProductModel {
   final double price;
   final String? sku;
   final String? category;
+  final String? imageUrl;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
@@ -22,6 +26,9 @@ class ProductModel {
       ),
       sku: json['sku']?.toString(),
       category: (json['category'] ?? json['categoryName'])?.toString(),
+      imageUrl: ApiConstants.resolveServerUrl(
+        (json['imageUrl'] ?? json['imageURL'] ?? json['image'])?.toString(),
+      ),
     );
   }
 

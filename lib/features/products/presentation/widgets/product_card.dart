@@ -29,12 +29,8 @@ class ProductCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.inventory_2_outlined,
-                size: 42,
-                color: Color(0xFF0B74DE),
-              ),
-              const SizedBox(height: 16),
+              _ProductImage(imageUrl: product.imageUrl),
+              const SizedBox(height: 12),
               Text(
                 product.name,
                 textAlign: TextAlign.center,
@@ -45,6 +41,19 @@ class ProductCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (product.category != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  product.category!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0B74DE),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
               if (product.sku != null) ...[
                 const SizedBox(height: 4),
                 Text(
@@ -69,6 +78,43 @@ class ProductCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  const _ProductImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 58,
+        height: 58,
+        color: const Color(0xFFEFF6FF),
+        child: url == null || url.isEmpty
+            ? const Icon(
+                Icons.inventory_2_outlined,
+                size: 34,
+                color: Color(0xFF0B74DE),
+              )
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.broken_image_outlined,
+                    size: 34,
+                    color: Color(0xFF94A3B8),
+                  );
+                },
+              ),
       ),
     );
   }

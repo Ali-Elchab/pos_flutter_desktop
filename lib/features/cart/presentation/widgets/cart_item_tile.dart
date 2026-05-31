@@ -20,6 +20,8 @@ class CartItemTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
+          _CartItemImage(imageUrl: item.product.imageUrl),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +34,10 @@ class CartItemTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  MoneyFormatter.format(item.product.price),
+                  [
+                    if (item.product.category != null) item.product.category!,
+                    MoneyFormatter.format(item.product.price),
+                  ].join(' - '),
                   style: const TextStyle(color: Color(0xFF64748B)),
                 ),
               ],
@@ -63,6 +68,43 @@ class CartItemTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CartItemImage extends StatelessWidget {
+  const _CartItemImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 42,
+        height: 42,
+        color: const Color(0xFFEFF6FF),
+        child: url == null || url.isEmpty
+            ? const Icon(
+                Icons.inventory_2_outlined,
+                size: 24,
+                color: Color(0xFF0B74DE),
+              )
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.broken_image_outlined,
+                    size: 24,
+                    color: Color(0xFF94A3B8),
+                  );
+                },
+              ),
       ),
     );
   }

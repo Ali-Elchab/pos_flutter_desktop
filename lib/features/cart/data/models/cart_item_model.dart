@@ -8,6 +8,19 @@ class CartItemModel {
 
   double get total => product.price * quantity;
 
+  Map<String, dynamic> toReceiptJson() {
+    return {
+      'productId': product.id,
+      'name': product.name,
+      'sku': product.sku,
+      'category': product.category,
+      'imageUrl': product.imageUrl,
+      'unitPrice': product.price,
+      'quantity': quantity,
+      'lineTotal': total,
+    };
+  }
+
   CartItemModel copyWith({int? quantity}) {
     return CartItemModel(product: product, quantity: quantity ?? this.quantity);
   }
