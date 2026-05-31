@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pos_flutter_desktop/core/network/api_client.dart';
 import 'package:pos_flutter_desktop/features/cart/logic/cart_cubit.dart';
 import 'package:pos_flutter_desktop/features/cart/presentation/widgets/cart_panel.dart';
 import 'package:pos_flutter_desktop/features/products/data/repositories/product_repository.dart';
 import 'package:pos_flutter_desktop/features/products/presentation/screens/products_screen.dart';
+import 'package:pos_flutter_desktop/features/sales/data/models/create_sale_request.dart';
+import 'package:pos_flutter_desktop/features/sales/data/repositories/sales_repository.dart';
+import 'package:pos_flutter_desktop/features/sales/logic/sales_cubit.dart';
 
 class PosShellScreen extends StatelessWidget {
   const PosShellScreen({this.productRepository, super.key});
@@ -12,8 +16,11 @@ class PosShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => CartCubit(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => CartCubit()),
+        BlocProvider(create: (_) => SalesCubit(SalesRepository(ApiClient()))),
+      ],
       child: Scaffold(
         body: LayoutBuilder(
           builder: (context, constraints) {
@@ -36,15 +43,25 @@ class PosShellScreen extends StatelessWidget {
                       if (showOrderPanel)
                         SizedBox(
                           width: 420,
-                          child: BlocBuilder<CartCubit, CartState>(
-                            builder: (context, state) {
-                              final cartCubit = context.read<CartCubit>();
+                          child: BlocBuilder<SalesCubit, SalesState>(
+                            builder: (context, salesState) {
+                              return BlocBuilder<CartCubit, CartState>(
+                                builder: (context, cartState) {
+                                  final cartCubit = context.read<CartCubit>();
 
-                              return CartPanel(
-                                state: state,
-                                onAdd: cartCubit.increaseItem,
-                                onRemove: cartCubit.decreaseItem,
-                                onClear: cartCubit.clear,
+                                  return CartPanel(
+                                    state: cartState,
+                                    onAdd: cartCubit.increaseItem,
+                                    onRemove: cartCubit.decreaseItem,
+                                    onClear: cartCubit.clear,
+                                    onPaymentMethodChanged:
+                                        cartCubit.selectPaymentMethod,
+                                    onPay: () => _pay(context, cartState),
+                                    isPaying:
+                                        salesState.status ==
+                                        SalesStatus.loading,
+                                  );
+                                },
                               );
                             },
                           ),
@@ -58,6 +75,34 @@ class PosShellScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _pay(BuildContext context, CartState cartState) async {
+    if (cartState.items.isEmpty) return;
+
+    final request = CreateSaleRequest(
+      items: cartState.items,
+      subtotal: cartState.subtotal,
+      tax: cartState.tax,
+      total: cartState.total,
+      paymentMethod: cartState.paymentMethod.label,
+    );
+
+    final sale = await context.read<SalesCubit>().createSale(request);
+    if (!context.mounted) return;
+
+    if (sale == null) {
+      final message = context.read<SalesCubit>().state.errorMessage;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message ?? 'Could not complete sale.')),
+      );
+      return;
+    }
+
+    context.read<CartCubit>().clear();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sale completed.')));
   }
 }
 

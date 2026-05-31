@@ -8,6 +8,10 @@ part 'cart_state.dart';
 class CartCubit extends Cubit<CartState> {
   CartCubit() : super(const CartState());
 
+  void selectPaymentMethod(PaymentMethod paymentMethod) {
+    emit(state.copyWith(paymentMethod: paymentMethod));
+  }
+
   void addProduct(ProductModel product) {
     final items = List<CartItemModel>.from(state.items);
     final existingIndex = items.indexWhere(
@@ -47,6 +51,6 @@ class CartCubit extends Cubit<CartState> {
   }
 
   void clear() {
-    emit(const CartState());
+    emit(CartState(paymentMethod: state.paymentMethod));
   }
 }

@@ -11,6 +11,9 @@ class CartPanel extends StatelessWidget {
     required this.onAdd,
     required this.onRemove,
     required this.onClear,
+    required this.onPaymentMethodChanged,
+    required this.onPay,
+    required this.isPaying,
     super.key,
   });
 
@@ -18,6 +21,9 @@ class CartPanel extends StatelessWidget {
   final ValueChanged<CartItemModel> onAdd;
   final ValueChanged<CartItemModel> onRemove;
   final VoidCallback onClear;
+  final ValueChanged<PaymentMethod> onPaymentMethodChanged;
+  final VoidCallback onPay;
+  final bool isPaying;
 
   @override
   Widget build(BuildContext context) {
@@ -88,23 +94,32 @@ class CartPanel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Row(
+                  Row(
                     children: [
                       Expanded(
-                        child: _PaymentMethod(icon: Icons.money, label: 'Cash'),
+                        child: _PaymentMethod(
+                          icon: Icons.money,
+                          paymentMethod: PaymentMethod.cash,
+                          selectedPaymentMethod: state.paymentMethod,
+                          onSelected: onPaymentMethodChanged,
+                        ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: _PaymentMethod(
                           icon: Icons.credit_card,
-                          label: 'Card',
+                          paymentMethod: PaymentMethod.card,
+                          selectedPaymentMethod: state.paymentMethod,
+                          onSelected: onPaymentMethodChanged,
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: _PaymentMethod(
                           icon: Icons.phone_android,
-                          label: 'Mobile',
+                          paymentMethod: PaymentMethod.mobile,
+                          selectedPaymentMethod: state.paymentMethod,
+                          onSelected: onPaymentMethodChanged,
                         ),
                       ),
                     ],
@@ -114,17 +129,29 @@ class CartPanel extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: state.items.isEmpty ? null : onClear,
+                          onPressed: state.items.isEmpty || isPaying
+                              ? null
+                              : onClear,
                           child: const Text('Clear Cart'),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: FilledButton(
-                          onPressed: state.items.isEmpty ? null : () {},
-                          child: Text(
-                            'Pay ${MoneyFormatter.format(state.total)}',
-                          ),
+                          onPressed: state.items.isEmpty || isPaying
+                              ? null
+                              : onPay,
+                          child: isPaying
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Pay ${MoneyFormatter.format(state.total)}',
+                                ),
                         ),
                       ),
                     ],
@@ -173,26 +200,40 @@ class _EmptyCartView extends StatelessWidget {
 }
 
 class _PaymentMethod extends StatelessWidget {
-  const _PaymentMethod({required this.icon, required this.label});
+  const _PaymentMethod({
+    required this.icon,
+    required this.paymentMethod,
+    required this.selectedPaymentMethod,
+    required this.onSelected,
+  });
 
   final IconData icon;
-  final String label;
+  final PaymentMethod paymentMethod;
+  final PaymentMethod selectedPaymentMethod;
+  final ValueChanged<PaymentMethod> onSelected;
 
   @override
   Widget build(BuildContext context) {
+    final selected = paymentMethod == selectedPaymentMethod;
+
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: () => onSelected(paymentMethod),
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF64748B),
+        backgroundColor: selected ? const Color(0xFFEFF6FF) : Colors.white,
+        foregroundColor: selected
+            ? const Color(0xFF0B74DE)
+            : const Color(0xFF64748B),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: BorderSide(
+          color: selected ? const Color(0xFF0B74DE) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Column(
         children: [
           Icon(icon, size: 19),
           const SizedBox(height: 6),
-          Text(label),
+          Text(paymentMethod.label),
         ],
       ),
     );

@@ -27,7 +27,7 @@ class CartTotals extends StatelessWidget {
           value: MoneyFormatter.format(subtotal),
         ),
         const SizedBox(height: 14),
-        _SummaryRow(label: 'Tax (8%)', value: MoneyFormatter.format(tax)),
+        _SummaryRow(label: 'Tax (11%)', value: MoneyFormatter.format(tax)),
         const SizedBox(height: 14),
         const Divider(),
         const SizedBox(height: 12),
