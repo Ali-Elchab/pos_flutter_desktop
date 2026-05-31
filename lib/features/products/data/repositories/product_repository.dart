@@ -3,9 +3,13 @@ import 'package:pos_flutter_desktop/core/network/api_client.dart';
 import 'package:pos_flutter_desktop/features/products/data/models/product_model.dart';
 
 class ProductRepository {
-  const ProductRepository(this._apiClient);
+  const ProductRepository(
+    this._apiClient, {
+    String serverBaseUrl = ApiConstants.serverBaseUrl,
+  }) : _serverBaseUrl = serverBaseUrl;
 
   final ApiClient _apiClient;
+  final String _serverBaseUrl;
 
   Future<List<ProductModel>> fetchProducts() async {
     final data = await _apiClient.get(ApiConstants.products);
@@ -13,7 +17,9 @@ class ProductRepository {
 
     return items
         .whereType<Map<String, dynamic>>()
-        .map(ProductModel.fromJson)
+        .map(
+          (json) => ProductModel.fromJson(json, serverBaseUrl: _serverBaseUrl),
+        )
         .where((product) => product.name.isNotEmpty)
         .toList();
   }

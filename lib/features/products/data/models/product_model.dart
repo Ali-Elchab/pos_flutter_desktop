@@ -17,7 +17,10 @@ class ProductModel {
   final String? category;
   final String? imageUrl;
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
+  factory ProductModel.fromJson(
+    Map<String, dynamic> json, {
+    String serverBaseUrl = ApiConstants.serverBaseUrl,
+  }) {
     return ProductModel(
       id: (json['id'] ?? json['productId'] ?? json['sku']).toString(),
       name: (json['name'] ?? json['productName'] ?? '').toString(),
@@ -28,6 +31,7 @@ class ProductModel {
       category: (json['category'] ?? json['categoryName'])?.toString(),
       imageUrl: ApiConstants.resolveServerUrl(
         (json['imageUrl'] ?? json['imageURL'] ?? json['image'])?.toString(),
+        serverBaseUrl: serverBaseUrl,
       ),
     );
   }
