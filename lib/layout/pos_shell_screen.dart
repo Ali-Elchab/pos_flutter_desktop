@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_flutter_desktop/core/constants/api_constants.dart';
 import 'package:pos_flutter_desktop/core/network/api_client.dart';
 import 'package:pos_flutter_desktop/features/cart/logic/cart_cubit.dart';
@@ -220,15 +223,7 @@ class _TopBar extends StatelessWidget {
               ),
               const Spacer(),
               if (showSessionDetails) ...[
-                const Icon(Icons.schedule, size: 21, color: Color(0xFF64748B)),
-                const SizedBox(width: 8),
-                const Text('05:40 PM', style: TextStyle(fontSize: 15, color: Color(0xFF334155))),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14),
-                  child: SizedBox(height: 24, child: VerticalDivider(color: Color(0xFFCBD5E1))),
-                ),
-                const Text('Sunday, May 31', style: TextStyle(fontSize: 15, color: Color(0xFF334155))),
-                const SizedBox(width: 32),
+                const _CurrentSessionClock(),
                 const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -259,6 +254,54 @@ class _TopBar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _CurrentSessionClock extends StatefulWidget {
+  const _CurrentSessionClock();
+
+  @override
+  State<_CurrentSessionClock> createState() => _CurrentSessionClockState();
+}
+
+class _CurrentSessionClockState extends State<_CurrentSessionClock> {
+  late DateTime _now;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _now = DateTime.now();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted) return;
+      setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final timeLabel = DateFormat('h:mm a').format(_now);
+    final dateLabel = DateFormat('EEEE, MMM d').format(_now);
+
+    return Row(
+      children: [
+        const Icon(Icons.schedule, size: 21, color: Color(0xFF64748B)),
+        const SizedBox(width: 8),
+        Text(timeLabel, style: const TextStyle(fontSize: 15, color: Color(0xFF334155))),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14),
+          child: SizedBox(height: 24, child: VerticalDivider(color: Color(0xFFCBD5E1))),
+        ),
+        Text(dateLabel, style: const TextStyle(fontSize: 15, color: Color(0xFF334155))),
+        const SizedBox(width: 32),
+      ],
     );
   }
 }
