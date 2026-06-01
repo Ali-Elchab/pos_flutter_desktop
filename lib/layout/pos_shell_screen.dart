@@ -34,9 +34,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final normalizedServerBaseUrl = ApiConstants.normalizeServerBaseUrl(
-      _serverBaseUrl,
-    );
+    final normalizedServerBaseUrl = ApiConstants.normalizeServerBaseUrl(_serverBaseUrl);
     final apiBaseUrl = ApiConstants.apiBaseUrlFor(normalizedServerBaseUrl);
 
     return KeyedSubtree(
@@ -44,10 +42,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => CartCubit()),
-          BlocProvider(
-            create: (_) =>
-                SalesCubit(SalesRepository(ApiClient(baseUrl: apiBaseUrl))),
-          ),
+          BlocProvider(create: (_) => SalesCubit(SalesRepository(ApiClient(baseUrl: apiBaseUrl)))),
         ],
         child: Scaffold(
           body: LayoutBuilder(
@@ -72,9 +67,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
                                   ApiClient(baseUrl: apiBaseUrl),
                                   serverBaseUrl: normalizedServerBaseUrl,
                                 ),
-                            onProductSelected: context
-                                .read<CartCubit>()
-                                .addProduct,
+                            onProductSelected: context.read<CartCubit>().addProduct,
                           ),
                         ),
                         if (showOrderPanel)
@@ -91,12 +84,9 @@ class _PosShellScreenState extends State<PosShellScreen> {
                                       onAdd: cartCubit.increaseItem,
                                       onRemove: cartCubit.decreaseItem,
                                       onClear: cartCubit.clear,
-                                      onPaymentMethodChanged:
-                                          cartCubit.selectPaymentMethod,
+                                      onPaymentMethodChanged: cartCubit.selectPaymentMethod,
                                       onPay: () => _pay(context, cartState),
-                                      isPaying:
-                                          salesState.status ==
-                                          SalesStatus.loading,
+                                      isPaying: salesState.status == SalesStatus.loading,
                                     );
                                   },
                                 );
@@ -151,9 +141,9 @@ class _PosShellScreenState extends State<PosShellScreen> {
 
     final state = salesCubit.state;
     if (state.status == SalesStatus.failure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.errorMessage ?? 'Could not load sales.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.errorMessage ?? 'Could not load sales.')));
       return;
     }
 
@@ -179,9 +169,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
 
     if (sale == null) {
       final message = context.read<SalesCubit>().state.errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message ?? 'Could not complete sale.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message ?? 'Could not complete sale.')));
       return;
     }
 
@@ -194,11 +182,7 @@ class _PosShellScreenState extends State<PosShellScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({
-    required this.serverBaseUrl,
-    required this.onHistoryPressed,
-    required this.onSettingsPressed,
-  });
+  const _TopBar({required this.serverBaseUrl, required this.onHistoryPressed, required this.onSettingsPressed});
 
   final String serverBaseUrl;
   final VoidCallback onHistoryPressed;
@@ -220,83 +204,43 @@ class _TopBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B74DE),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Q',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset('assets/icons/icon.jpg', width: 50, height: 50, fit: BoxFit.cover),
               ),
               const SizedBox(width: 14),
               const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'QuickPOS',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
+                  Text('QuickPOS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   SizedBox(height: 1),
-                  Text(
-                    'Point of Sale',
-                    style: TextStyle(color: Color(0xFF475569), fontSize: 13),
-                  ),
+                  Text('Point of Sale', style: TextStyle(color: Color(0xFF475569), fontSize: 13)),
                 ],
               ),
               const Spacer(),
               if (showSessionDetails) ...[
                 const Icon(Icons.schedule, size: 21, color: Color(0xFF64748B)),
                 const SizedBox(width: 8),
-                const Text(
-                  '05:40 PM',
-                  style: TextStyle(fontSize: 15, color: Color(0xFF334155)),
-                ),
+                const Text('05:40 PM', style: TextStyle(fontSize: 15, color: Color(0xFF334155))),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14),
-                  child: SizedBox(
-                    height: 24,
-                    child: VerticalDivider(color: Color(0xFFCBD5E1)),
-                  ),
+                  child: SizedBox(height: 24, child: VerticalDivider(color: Color(0xFFCBD5E1))),
                 ),
-                const Text(
-                  'Sunday, May 31',
-                  style: TextStyle(fontSize: 15, color: Color(0xFF334155)),
-                ),
+                const Text('Sunday, May 31', style: TextStyle(fontSize: 15, color: Color(0xFF334155))),
                 const SizedBox(width: 32),
                 const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      'John Doe',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text('John Doe', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                     SizedBox(height: 1),
-                    Text(
-                      'Cashier',
-                      style: TextStyle(color: Color(0xFF475569), fontSize: 13),
-                    ),
+                    Text('Cashier', style: TextStyle(color: Color(0xFF475569), fontSize: 13)),
                   ],
                 ),
                 const SizedBox(width: 14),
               ],
-              IconButton.filledTonal(
-                onPressed: () {},
-                icon: const Icon(Icons.person_outline),
-              ),
+              IconButton.filledTonal(onPressed: () {}, icon: const Icon(Icons.person_outline)),
               if (showSettings) ...[
                 const SizedBox(width: 12),
                 IconButton(
@@ -352,22 +296,13 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         child: TextField(
           controller: _baseUrlController,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Base URL',
-            hintText: 'https://localhost:7143',
-          ),
+          decoration: const InputDecoration(labelText: 'Base URL', hintText: 'https://localhost:7143'),
           onSubmitted: (_) => _save(context),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => _save(context),
-          child: const Text('Save'),
-        ),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        FilledButton(onPressed: () => _save(context), child: const Text('Save')),
       ],
     );
   }
